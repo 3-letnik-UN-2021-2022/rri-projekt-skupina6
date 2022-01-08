@@ -3,6 +3,7 @@ package com.badlogic.nonogram.scene;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -60,6 +61,11 @@ public class GameScreen extends ScreenAdapter {
     private GameDialog gameOverDialog;
     private GameDialog gameSolvedDialog;
 
+    private final Sound tileClickSound;
+    private final Sound buttonClickSound;
+    private final Sound solvedSound;
+    private Sound gameOverSound;
+
     public GameScreen(Nonogram game, GameMode gameMode) {
         this.game = game;
         this.gameMode = gameMode;
@@ -69,6 +75,10 @@ public class GameScreen extends ScreenAdapter {
         else
             tileValues = generateNonogramTiles();
         timeRemaining = GameManager.INSTANCE.getTimeLimit();
+        tileClickSound = assetManager.get(AssetDescriptors.TILE_CLICK_SOUND);
+        buttonClickSound = assetManager.get(AssetDescriptors.BUTTON_CLICK_SOUND);
+        solvedSound = assetManager.get(AssetDescriptors.SOLVED_SOUND);
+        gameOverSound = assetManager.get(AssetDescriptors.GAME_OVER_SOUND);
     }
 
     @Override
@@ -102,6 +112,7 @@ public class GameScreen extends ScreenAdapter {
         }
         else if(timeRemaining < 0 && gameStatus == GameStatus.playing)
         {
+            gameOverSound.play();
             gameStatus = GameStatus.gameOver;
             statusLabel.setText("GAME OVER");
             gameOverDialog.getContentTable().clearChildren(); //clear old
@@ -153,6 +164,8 @@ public class GameScreen extends ScreenAdapter {
                     tiles[i][j].addListener(new ClickListener() {
                         @Override
                         public void clicked(InputEvent event, float x, float y) {
+                            long id = tileClickSound.play();
+                            tileClickSound.setVolume(id,0.2f);
                             checkIfSolved();
                         }
                     });
@@ -173,6 +186,7 @@ public class GameScreen extends ScreenAdapter {
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 game.setScreen(new MenuScreen(game));
             }
         });
@@ -190,6 +204,7 @@ public class GameScreen extends ScreenAdapter {
             for (int j = 3; j < tileValues.get(0).size; j++)
                     if (tiles[i][j].isChecked() != (tileValues.get(i).get(j) == 1))
                         return;
+        solvedSound.play();
         gameStatus = GameStatus.solved;
         gameSolvedDialog.getContentTable().clearChildren();
         gameSolvedDialog.text("You solved the puzzle in " + (GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining) + " seconds.").padRight(20).padLeft(20);
@@ -212,9 +227,11 @@ public class GameScreen extends ScreenAdapter {
             protected void result(Object object) {
                 switch ((GameDialog.Options)object) {
                     case back:
+                        buttonClickSound.play();
                         game.setScreen(new MenuScreen(game));
                         break;
                     case retry:
+                        buttonClickSound.play();
                         game.setScreen(new GameScreen(game,gameMode));
                         break;
                 }
@@ -235,9 +252,11 @@ public class GameScreen extends ScreenAdapter {
                 protected void result(Object object) {
                     switch ((GameDialog.Options)object) {
                         case back:
+                            buttonClickSound.play();
                             game.setScreen(new MenuScreen(game));
                             break;
                         case enter:
+                            buttonClickSound.play();
                             if(!nickname.equals(""))
                                 GameManager.INSTANCE.setLeaderboard(GameManager.INSTANCE.getNickname(),String.valueOf(GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining));
                             else if(!textField.getText().equals(""))

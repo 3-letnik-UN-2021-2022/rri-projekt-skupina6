@@ -6,6 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -27,9 +28,9 @@ public class GameManager {
     private int timeLimit;
     private String nickname;
     private LeaderBoard leaderBoard;
-    private final NonogramTiles nonogramTiles;
+    private NonogramTiles nonogramTiles;
     private final Json json = new Json();
-    Random r = new Random();
+    Random random = new Random();
 
     private GameManager() {
         PREFS = Gdx.app.getPreferences(Nonogram.class.getSimpleName());
@@ -59,13 +60,63 @@ public class GameManager {
         PREFS.flush();
     }
 
+    public void saveNonogram(Array<Array<Float>> tile)
+    {
+        nonogramTiles.shapes.add(tile);
+        String stringTiles = json.toJson(nonogramTiles);
+        FileHandle file = Gdx.files.local(TILES);
+        file.writeString(stringTiles, false);
+    }
+
     public LeaderBoard getLeaderBoard() {
         return leaderBoard;
     }
     public Array<Array<Float>> getTile()
     {
-        int rand = r.nextInt(nonogramTiles.shapes.size);
-        return nonogramTiles.shapes.get(rand);
+        int rand = random.nextInt(nonogramTiles.shapes.size);
+        int size = nonogramTiles.shapes.get(rand).size;
+        Array<Array<Float>> tiles = new Array<>();
+
+        for(int i = 0; i < size;i++)
+        {
+            tiles.add(new Array<Float>());
+            for(int j = 0; j < size;j++)
+                tiles.get(i).add(nonogramTiles.shapes.get(rand).get(i).get(j));
+        }
+
+        for(int i = 0; i < 5;i++)
+            for(int j = 0; j < 3;j++)
+                tiles.get(i).insert(0,0f);
+
+        for(int i = 0; i < 3;i++)
+        {
+            tiles.insert(0,new Array<Float>());
+            for(int j = 0; j < 8;j++)
+                tiles.first().add(0f);
+        }
+
+        int leftIndex = 0;
+        int[] topIndex = new int[5];
+        Arrays.fill(topIndex, 0);
+
+        for(int r = 3; r < tiles.size;r++)
+        {
+            for(int c = 3; c < tiles.get(0).size;c++)
+            {
+                if(tiles.get(r).get(c) == 1)
+                {
+                    tiles.get(r).set(leftIndex,tiles.get(r).get(leftIndex) + 1);
+                    tiles.get(topIndex[c - 3]).set(c,tiles.get(topIndex[c - 3]).get(c) + 1);
+                }
+                if(tiles.get(r).get(c) == 0 && tiles.get(r).get(leftIndex) != 0)
+                    leftIndex++;
+                if(tiles.get(r).get(c) == 0 && tiles.get(topIndex[c - 3]).get(c) != 0)
+                    topIndex[c - 3]++;
+            }
+            leftIndex = 0;
+        }
+
+        return tiles;
     }
 
     public void setLeaderboard(String name, String time) {

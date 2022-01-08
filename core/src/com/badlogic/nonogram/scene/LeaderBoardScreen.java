@@ -3,6 +3,7 @@ package com.badlogic.nonogram.scene;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -33,13 +34,17 @@ public class LeaderBoardScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private TextureAtlas scene2dAtlas;
+    private final Sound buttonClickSound;
 
     private LeaderBoard leaderBoard;
+
+
 
     public LeaderBoardScreen(Nonogram game) {
         this.game = game;
         assetManager = game.getAssetManager();
         leaderBoard = GameManager.INSTANCE.getLeaderBoard();
+        buttonClickSound = assetManager.get(AssetDescriptors.BUTTON_CLICK_SOUND);
     }
 
     @Override
@@ -104,6 +109,7 @@ public class LeaderBoardScreen extends ScreenAdapter {
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 game.setScreen(new MenuScreen(game));
             }
         });

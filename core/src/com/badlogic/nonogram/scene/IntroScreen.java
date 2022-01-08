@@ -50,6 +50,10 @@ public class IntroScreen extends ScreenAdapter {
         assetManager.load(AssetDescriptors.UI_FONT_BIG);
         assetManager.load(AssetDescriptors.UI_SKIN);
         assetManager.load(AssetDescriptors.SCENE2D);
+        assetManager.load(AssetDescriptors.TILE_CLICK_SOUND);
+        assetManager.load(AssetDescriptors.BUTTON_CLICK_SOUND);
+        assetManager.load(AssetDescriptors.GAME_OVER_SOUND);
+        assetManager.load(AssetDescriptors.SOLVED_SOUND);
         assetManager.finishLoading();
 
         atlas = assetManager.get(AssetDescriptors.SCENE2D);

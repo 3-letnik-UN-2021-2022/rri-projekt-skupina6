@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -36,6 +37,8 @@ public class SettingsScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private TextureAtlas scene2dAtlas;
+    private final Sound buttonClickSound;
+
 
     private ButtonGroup<CheckBox> checkBoxGroup;
     private CheckBox timelimit1;
@@ -53,6 +56,7 @@ public class SettingsScreen extends ScreenAdapter {
         this.game = game;
         assetManager = game.getAssetManager();
         nickname = GameManager.INSTANCE.getNickname();
+        buttonClickSound = assetManager.get(AssetDescriptors.BUTTON_CLICK_SOUND);
     }
 
     @Override
@@ -129,6 +133,7 @@ public class SettingsScreen extends ScreenAdapter {
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 game.setScreen(new MenuScreen(game));
             }
         });
@@ -140,6 +145,7 @@ public class SettingsScreen extends ScreenAdapter {
         nicknameButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 GameManager.INSTANCE.setNickname(nicknameField.getText());
                 nickname = nicknameField.getText();
                 nicknameField.setText(nickname);
@@ -151,6 +157,7 @@ public class SettingsScreen extends ScreenAdapter {
         clearNicknameButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 GameManager.INSTANCE.setNickname("");
                 nicknameField.setText("");
                 nickname = "";

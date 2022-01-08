@@ -3,6 +3,7 @@ package com.badlogic.nonogram.scene;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -28,10 +29,13 @@ public class ChooseGameModeScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private TextureAtlas scene2dAtlas;
+    private final Sound buttonClickSound;
+
 
     public ChooseGameModeScreen(Nonogram game) {
         this.game = game;
         assetManager = game.getAssetManager();
+        buttonClickSound = assetManager.get(AssetDescriptors.BUTTON_CLICK_SOUND);
     }
 
     @Override
@@ -81,6 +85,7 @@ public class ChooseGameModeScreen extends ScreenAdapter {
         patternGameButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 game.setScreen(new GameScreen(game, GameMode.pattern));
             }
         });
@@ -89,14 +94,26 @@ public class ChooseGameModeScreen extends ScreenAdapter {
         randomGameButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 game.setScreen(new GameScreen(game,GameMode.random));
             }
         });
+
+        TextButton createNonogramButton = new TextButton("Create Layout", skin);
+        createNonogramButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
+                game.setScreen(new CreateNonogramScene(game));
+            }
+        });
+
 
         TextButton backButton = new TextButton("Back", skin);
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
                 game.setScreen(new MenuScreen(game));
             }
         });
@@ -106,6 +123,7 @@ public class ChooseGameModeScreen extends ScreenAdapter {
         buttonTable.add(gameLabel).padBottom(50).row();
         buttonTable.add(patternGameButton).padBottom(15).fillX().row();
         buttonTable.add(randomGameButton).padBottom(15).fillX().row();
+        buttonTable.add(createNonogramButton).padBottom(15).fillX().row();
         buttonTable.add(backButton).padBottom(15).fillX().row();
         buttonTable.center();
         table.add(buttonTable);
