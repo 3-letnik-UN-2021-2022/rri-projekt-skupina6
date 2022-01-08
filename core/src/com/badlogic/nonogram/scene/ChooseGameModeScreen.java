@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -17,8 +18,9 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.nonogram.Nonogram;
 import com.badlogic.nonogram.assets.AssetDescriptors;
 import com.badlogic.nonogram.config.GameConfig;
+import com.rafaskoberg.gdx.typinglabel.TypingLabel;
 
-public class MenuScreen extends ScreenAdapter {
+public class ChooseGameModeScreen extends ScreenAdapter {
     private final Nonogram game;
     private final AssetManager assetManager;
 
@@ -27,7 +29,7 @@ public class MenuScreen extends ScreenAdapter {
     private Skin skin;
     private TextureAtlas scene2dAtlas;
 
-    public MenuScreen(Nonogram game) {
+    public ChooseGameModeScreen(Nonogram game) {
         this.game = game;
         assetManager = game.getAssetManager();
     }
@@ -37,13 +39,6 @@ public class MenuScreen extends ScreenAdapter {
 
         viewport = new FitViewport(GameConfig.HUD_WIDTH, GameConfig.HUD_HEIGHT);
         stage = new Stage(viewport, game.getBatch());
-
-        //TODO: ZBRISI KO KONCAS Z DELOM
-        assetManager.load(AssetDescriptors.UI_FONT);
-        assetManager.load(AssetDescriptors.UI_FONT_BIG);
-        assetManager.load(AssetDescriptors.UI_SKIN);
-        assetManager.load(AssetDescriptors.SCENE2D);
-        assetManager.finishLoading();
 
         skin = assetManager.get(AssetDescriptors.UI_SKIN);
         scene2dAtlas = assetManager.get(AssetDescriptors.SCENE2D);
@@ -79,44 +74,39 @@ public class MenuScreen extends ScreenAdapter {
         Table table = new Table();
         table.defaults().pad(20);
 
-        TextButton playButton = new TextButton("Play", skin);
-        playButton.addListener(new ClickListener() {
+        TypingLabel gameLabel = new TypingLabel("{EASE}Select Gamemode",skin.get("white", Label.LabelStyle.class));
+        gameLabel.setFontScale(4);
+
+        TextButton patternGameButton = new TextButton("Pattern", skin);
+        patternGameButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new ChooseGameModeScreen(game));
+                game.setScreen(new GameScreen(game, GameMode.pattern));
             }
         });
 
-        TextButton leaderBoardButton = new TextButton("LeaderBoard", skin);
-        leaderBoardButton.addListener(new ClickListener() {
+        TextButton randomGameButton = new TextButton("Random", skin);
+        randomGameButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new LeaderBoardScreen(game));
+                game.setScreen(new GameScreen(game,GameMode.random));
             }
         });
 
-        TextButton settingsButton = new TextButton("Settings", skin);
-        settingsButton.addListener(new ClickListener() {
+        TextButton backButton = new TextButton("Back", skin);
+        backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new SettingsScreen(game));
+                game.setScreen(new MenuScreen(game));
             }
         });
 
-        TextButton quitButton = new TextButton("Quit", skin);
-        quitButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
-            }
-        });
 
         Table buttonTable = new Table();
-        buttonTable.defaults().padLeft(30).padRight(30);
-        buttonTable.add(playButton).padBottom(15).expandX().fillX().row();
-        buttonTable.add(leaderBoardButton).padBottom(15).fillX().row();
-        buttonTable.add(settingsButton).padBottom(15).fillX().row();
-        buttonTable.add(quitButton).fillX();
+        buttonTable.add(gameLabel).padBottom(50).row();
+        buttonTable.add(patternGameButton).padBottom(15).fillX().row();
+        buttonTable.add(randomGameButton).padBottom(15).fillX().row();
+        buttonTable.add(backButton).padBottom(15).fillX().row();
         buttonTable.center();
         table.add(buttonTable);
         table.center();

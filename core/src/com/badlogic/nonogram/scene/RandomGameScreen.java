@@ -29,17 +29,9 @@ import com.badlogic.nonogram.config.GameConfig;
 import com.badlogic.nonogram.dialog.GameDialog;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
-
-enum GameStatus {
-    playing,gameOver,solved
-}
-enum GameMode{
-    pattern,random
-}
-public class GameScreen extends ScreenAdapter {
+public class RandomGameScreen extends ScreenAdapter {
     private final Nonogram game;
     private final AssetManager assetManager;
 
@@ -55,20 +47,57 @@ public class GameScreen extends ScreenAdapter {
 
     double timeRemaining;
     GameStatus gameStatus = GameStatus.playing;
-    GameMode gameMode;
 
     private GameDialog gameOverDialog;
     private GameDialog gameSolvedDialog;
 
-    public GameScreen(Nonogram game, GameMode gameMode) {
+    public RandomGameScreen(Nonogram game) {
         this.game = game;
-        this.gameMode = gameMode;
         assetManager = game.getAssetManager();
-        if (gameMode == GameMode.pattern)
-            tileValues = GameManager.INSTANCE.getTile();
-        else
-            tileValues = generateNonogramTiles();
+        //tileValues = GameManager.INSTANCE.getTile();
+        tileValues = generateNonogram();
         timeRemaining = GameManager.INSTANCE.getTimeLimit();
+    }
+
+    private Array<Array<Float>> generateNonogram() {
+        Array<Array<Float>> nonogram = new Array<>();
+        Random rand = new Random();
+
+        nonogram.setSize(8);
+        for(int i = 0; i < nonogram.size;i++)
+        {
+            nonogram.set(i,new Array<Float>());
+            nonogram.get(i).setSize(8);
+        }
+
+        for(int i = 0; i < nonogram.size;i++)
+            for(int j = 0; j < nonogram.get(0).size;j++)
+                nonogram.get(i).set(j,0.0f);
+
+        int leftIndex = 0;
+        int[] topIndex = new int[5];
+        Arrays.fill(topIndex, 0);
+
+        for(int r = 3; r < nonogram.size;r++)
+        {
+            for(int c = 3; c < nonogram.get(0).size;c++)
+            {
+                nonogram.get(r).set(c, (float) rand.nextInt(2));
+                if(nonogram.get(r).get(c) == 1)
+                {
+                    nonogram.get(r).set(leftIndex,nonogram.get(r).get(leftIndex) + 1);
+                    nonogram.get(topIndex[c - 3]).set(c,nonogram.get(topIndex[c - 3]).get(c) + 1);
+                }
+                if(nonogram.get(r).get(c) == 0 && nonogram.get(r).get(leftIndex) != 0)
+                    leftIndex++;
+                if(nonogram.get(r).get(c) == 0 && nonogram.get(topIndex[c - 3]).get(c) != 0)
+                    topIndex[c - 3]++;
+            }
+            leftIndex = 0;
+        }
+
+
+        return nonogram;
     }
 
     @Override
@@ -188,8 +217,8 @@ public class GameScreen extends ScreenAdapter {
     {
         for (int i = 3; i < tileValues.size; i++)
             for (int j = 3; j < tileValues.get(0).size; j++)
-                    if (tiles[i][j].isChecked() != (tileValues.get(i).get(j) == 1))
-                        return;
+                if (tiles[i][j].isChecked() != (tileValues.get(i).get(j) == 1))
+                    return;
         gameStatus = GameStatus.solved;
         gameSolvedDialog.getContentTable().clearChildren();
         gameSolvedDialog.text("You solved the puzzle in " + (GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining) + " seconds.").padRight(20).padLeft(20);
@@ -215,7 +244,7 @@ public class GameScreen extends ScreenAdapter {
                         game.setScreen(new MenuScreen(game));
                         break;
                     case retry:
-                        game.setScreen(new GameScreen(game,gameMode));
+                        game.setScreen(new RandomGameScreen(game));
                         break;
                 }
             }
@@ -228,81 +257,43 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void initSolvedGameDialog() {
-            final TextField textField = new TextField("",skin);
-            final String nickname = GameManager.INSTANCE.getNickname();
+        final TextField textField = new TextField("",skin);
+        final String nickname = GameManager.INSTANCE.getNickname();
 
-            gameSolvedDialog = new GameDialog("CONGRATULATIONS!",skin, "dialog") {
-                protected void result(Object object) {
-                    switch ((GameDialog.Options)object) {
-                        case back:
-                            game.setScreen(new MenuScreen(game));
-                            break;
-                        case enter:
-                            if(!nickname.equals(""))
-                                GameManager.INSTANCE.setLeaderboard(GameManager.INSTANCE.getNickname(),String.valueOf(GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining));
-                            else if(!textField.getText().equals(""))
-                                GameManager.INSTANCE.setLeaderboard(textField.getText(),String.valueOf(GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining));
-                            else
-                                GameManager.INSTANCE.setLeaderboard("Anonymous",String.valueOf(GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining));
-                            game.setScreen(new MenuScreen(game));
-                            break;
-                    }
+        gameSolvedDialog = new GameDialog("CONGRATULATIONS!",skin, "dialog") {
+            protected void result(Object object) {
+                switch ((GameDialog.Options)object) {
+                    case back:
+                        game.setScreen(new MenuScreen(game));
+                        break;
+                    case enter:
+                        if(!nickname.equals(""))
+                            GameManager.INSTANCE.setLeaderboard(GameManager.INSTANCE.getNickname(),String.valueOf(GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining));
+                        else if(!textField.getText().equals(""))
+                            GameManager.INSTANCE.setLeaderboard(textField.getText(),String.valueOf(GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining));
+                        else
+                            GameManager.INSTANCE.setLeaderboard("Anonymous",String.valueOf(GameManager.INSTANCE.getTimeLimit() - (int)timeRemaining));
+                        game.setScreen(new MenuScreen(game));
+                        break;
                 }
-            };
-            gameSolvedDialog.setDebug(false);
-            TextButton cancelButton = new TextButton("cancel",skin.get("small", TextButton.TextButtonStyle.class));
-            TextButton enterButton = new TextButton("enter",skin.get("small", TextButton.TextButtonStyle.class));
-            if(nickname.equals(""))
-            {
-                gameSolvedDialog.addTextField(textField).fill();
-                gameSolvedDialog.getButtonTable().row();
             }
-            else
-            {
-                cancelButton.setText("Dont save");
-                enterButton.setText("Save score");
-            }
-            gameSolvedDialog.addButton(cancelButton,GameDialog.Options.back).expand().left();
-            gameSolvedDialog.addButton(enterButton,GameDialog.Options.enter).expand().right();
-    }
-
-    private Array<Array<Float>> generateNonogramTiles() {
-        Array<Array<Float>> nonogram = new Array<>();
-        Random rand = new Random();
-
-        nonogram.setSize(8);
-        for(int i = 0; i < nonogram.size;i++)
+        };
+        gameSolvedDialog.setDebug(false);
+        TextButton cancelButton = new TextButton("cancel",skin.get("small", TextButton.TextButtonStyle.class));
+        TextButton enterButton = new TextButton("enter",skin.get("small", TextButton.TextButtonStyle.class));
+        if(nickname.equals(""))
         {
-            nonogram.set(i,new Array<Float>());
-            nonogram.get(i).setSize(8);
+            gameSolvedDialog.addTextField(textField).fill();
+            gameSolvedDialog.getButtonTable().row();
         }
-
-        for(int i = 0; i < nonogram.size;i++)
-            for(int j = 0; j < nonogram.get(0).size;j++)
-                nonogram.get(i).set(j,0.0f);
-
-        int leftIndex = 0;
-        int[] topIndex = new int[5];
-        Arrays.fill(topIndex, 0);
-
-        for(int r = 3; r < nonogram.size;r++)
+        else
         {
-            for(int c = 3; c < nonogram.get(0).size;c++)
-            {
-                nonogram.get(r).set(c, (float) rand.nextInt(2));
-                if(nonogram.get(r).get(c) == 1)
-                {
-                    nonogram.get(r).set(leftIndex,nonogram.get(r).get(leftIndex) + 1);
-                    nonogram.get(topIndex[c - 3]).set(c,nonogram.get(topIndex[c - 3]).get(c) + 1);
-                }
-                if(nonogram.get(r).get(c) == 0 && nonogram.get(r).get(leftIndex) != 0)
-                    leftIndex++;
-                if(nonogram.get(r).get(c) == 0 && nonogram.get(topIndex[c - 3]).get(c) != 0)
-                    topIndex[c - 3]++;
-            }
-            leftIndex = 0;
+            cancelButton.setText("Dont save");
+            enterButton.setText("Save score");
         }
-        return nonogram;
+        gameSolvedDialog.addButton(cancelButton,GameDialog.Options.back).expand().left();
+        gameSolvedDialog.addButton(enterButton,GameDialog.Options.enter).expand().right();
     }
 
 }
+

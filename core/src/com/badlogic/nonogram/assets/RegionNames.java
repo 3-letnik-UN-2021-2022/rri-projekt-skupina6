@@ -5,6 +5,7 @@ public class RegionNames {
     // scene2d.atlas
     public static final String WHITE_TILE = "white";
     public static final String BLACK_TILE = "black";
+    public static final String TILE_0 = "0";
     public static final String TILE_1 = "1";
     public static final String TILE_2 = "2";
     public static final String TILE_3 = "3";

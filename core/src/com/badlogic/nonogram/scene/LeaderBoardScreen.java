@@ -95,10 +95,13 @@ public class LeaderBoardScreen extends ScreenAdapter {
             table.row();
         }
         table.row().colspan(2);
-        TextButton returnButton = new TextButton("Back",skin);
-        table.add(returnButton).align(Align.bottom).expandY();
+        TextButton backButton = new TextButton("Back",skin);
+        backButton.setOrigin(Align.center);
+        backButton.setTransform(true);
+        backButton.setScale(0.5f);
+        table.add(backButton).align(Align.bottom).expandY();
 
-        returnButton.addListener(new ClickListener() {
+        backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new MenuScreen(game));
