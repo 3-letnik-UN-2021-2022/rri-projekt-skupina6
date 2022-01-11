@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -41,12 +42,16 @@ public class CreateNonogramScene extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private TextureAtlas atlas;
+
+    Drawable whiteTileDrawable;
+    Drawable blackTileDrawable;
+
     private final Sound buttonClickSound;
     private final Sound tileClickSound;
 
 
 
-    final ImageButton[][] tiles = new ImageButton[5][5];
+    final Image[][] tiles = new Image[5][5];
     Array<Array<Float>> tileValues = new Array<>();
 
     public CreateNonogramScene(Nonogram game) {
@@ -63,6 +68,9 @@ public class CreateNonogramScene extends ScreenAdapter {
 
         skin = assetManager.get(AssetDescriptors.UI_SKIN);
         atlas = assetManager.get(AssetDescriptors.SCENE2D);
+
+        whiteTileDrawable = new TextureRegionDrawable(atlas.findRegion(RegionNames.WHITE_TILE));
+        blackTileDrawable = new TextureRegionDrawable(atlas.findRegion(RegionNames.BLACK_TILE));
 
         Gdx.input.setInputProcessor(stage);
         stage.addActor(createGame());
@@ -101,35 +109,26 @@ public class CreateNonogramScene extends ScreenAdapter {
 
         Table tileTable = new Table();
         tileTable.defaults();
-        Drawable drawable = new TextureRegionDrawable(atlas.findRegion(RegionNames.WHITE_TILE));
-        Drawable drawable2 = new TextureRegionDrawable(atlas.findRegion(RegionNames.BLACK_TILE));
 
         for (int i = 0; i < 5; i++)
         {
             for (int j = 0; j < 5; j++)
             {
-                tiles[i][j] = new ImageButton(drawable,drawable,drawable2);
+                final int finalI = i, finalJ = j;
+                tiles[i][j] = new Image(whiteTileDrawable);
+                tiles[i][j].setName("0.0");
                 tileTable.add(tiles[i][j]).size(55);
                 tiles[i][j].addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        tileClickSound.play();
+                        long id = tileClickSound.play();
+                        tileClickSound.setVolume(id,0.2f);
+                        switchTileState(finalI,finalJ);
                     }
                 });
             }
             tileTable.row();
         }
-
-        for (int i = 0; i < tileValues.size; i++)
-            for (int j = 0; j < tileValues.get(0).size; j++) {
-                final int finalI = i, finalJ = j;
-                tiles[i][j].addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        tiles[finalI][finalJ].toggle();
-                    }
-                });
-            }
 
         tileTable.center();
         table.add(tileTable).colspan(2).row();
@@ -146,7 +145,7 @@ public class CreateNonogramScene extends ScreenAdapter {
                 {
                     tileValues.add(new Array<Float>());
                     for(int j = 0; j < 5;j++)
-                        tileValues.get(i).add(tiles[i][j].isChecked() ? 1f : 0f);
+                        tileValues.get(i).add(tiles[i][j].getName().equals("0.0") ? 0f : 1f);
                 }
                 GameManager.INSTANCE.saveNonogram(tileValues);
                 game.setScreen(new MenuScreen(game));
@@ -172,5 +171,19 @@ public class CreateNonogramScene extends ScreenAdapter {
         table.setFillParent(true);
         table.pack();
         return table;
+    }
+
+    void switchTileState(int i, int j)
+    {
+        if (tiles[i][j].getName().equals("1.0"))
+        {
+            tiles[i][j].setName("0.0");
+            tiles[i][j].setDrawable(whiteTileDrawable);
+        }
+        else
+        {
+            tiles[i][j].setName("1.0");
+            tiles[i][j].setDrawable(blackTileDrawable);
+        }
     }
 }

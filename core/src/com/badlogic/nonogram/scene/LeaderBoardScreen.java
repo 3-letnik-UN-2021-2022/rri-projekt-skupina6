@@ -85,18 +85,32 @@ public class LeaderBoardScreen extends ScreenAdapter {
         Table table = new Table();
         table.defaults().pad(2);
         table.pad(20);
-        TypingLabel topLabel = new TypingLabel("{EASE}LeaderBoard",skin.get("white", Label.LabelStyle.class));
-        topLabel.setAlignment(Align.center);
-        topLabel.setFontScale(4);
+
+        TypingLabel topTitle = new TypingLabel("{EASE}LeaderBoard",skin.get("white", Label.LabelStyle.class));
+        Label nameTitle = new Label("Name", skin.get("white", Label.LabelStyle.class));
+        Label timeTitle = new Label("Time", skin.get("white", Label.LabelStyle.class));
+
+        topTitle.setAlignment(Align.center);
+        topTitle.setFontScale(4);
+        nameTitle.setFontScale(1.5f);
+        timeTitle.setFontScale(1.5f);
+
+
         table.row().colspan(2);
-        table.add(topLabel);
+        table.add(topTitle);
         table.row().padBottom(10);
-        table.add(new Label("Name", skin.get("white", Label.LabelStyle.class))).align(Align.left);
-        table.add(new Label("Time", skin.get("white", Label.LabelStyle.class))).align(Align.right);
+        table.add(nameTitle).align(Align.left);
+        table.add(timeTitle).align(Align.right);
         table.row();
         for (int i = 0; i < leaderBoard.names.size();i++) {
-            table.add(new Label(leaderBoard.names.get(i), skin.get("white", Label.LabelStyle.class))).align(Align.left);
-            table.add(new Label(leaderBoard.times.get(i), skin.get("white", Label.LabelStyle.class))).align(Align.right);
+            Label nameLabel = new Label(leaderBoard.names.get(i), skin.get("white", Label.LabelStyle.class));
+            Label timeLabel = new Label(leaderBoard.times.get(i), skin.get("white", Label.LabelStyle.class));
+
+            nameLabel.setFontScale(1.5f);
+            timeLabel.setFontScale(1.5f);
+
+            table.add(nameLabel).align(Align.left);
+            table.add(timeLabel).align(Align.right);
             table.row();
         }
         table.row().colspan(2);

@@ -27,8 +27,8 @@ public class Nonogram extends Game {
 		assetManager.getLogger().setLevel(Logger.DEBUG);
 
 		batch = new SpriteBatch();
-		//setScreen(new IntroScreen(this));
-		setScreen(new MenuScreen(this));
+		setScreen(new IntroScreen(this));
+		//setScreen(new MenuScreen(this));
 	}
 	
 	@Override

@@ -81,9 +81,16 @@ black
   orig: 64, 64
   offset: 0, 0
   index: -1
-white
+marked
   rotate: false
   xy: 728, 2
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+white
+  rotate: false
+  xy: 794, 2
   size: 64, 64
   orig: 64, 64
   offset: 0, 0

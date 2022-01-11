@@ -74,7 +74,6 @@ public class IntroScreen extends ScreenAdapter {
 
         duration += delta;
 
-        // go to the MenuScreen after INTRO_DURATION_IN_SEC seconds
         if (duration > INTRO_DURATION_IN_SEC) {
             game.setScreen(new MenuScreen(game));
         }
@@ -96,6 +95,7 @@ public class IntroScreen extends ScreenAdapter {
 
     private Actor createTable() {
         Table table = new Table();
+
 
         TypingLabel nonogramLabel = new TypingLabel(" {SPEED=0.38}{WAIT=0.5}Nonogram {WAIT=1}",skin.get("white", Label.LabelStyle.class));
         nonogramLabel.setFontScale(4);
@@ -123,6 +123,7 @@ public class IntroScreen extends ScreenAdapter {
         key.setScale(1.2f);
         key.addAction(
                 Actions.sequence(
+                        Actions.delay(1),
                         Actions.parallel(
                                 Actions.rotateBy(-720, 2f),
                                 Actions.moveTo(viewport.getWorldWidth() + 50, 290, 2f)

@@ -8,12 +8,13 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -30,7 +31,6 @@ import com.badlogic.nonogram.config.GameConfig;
 import com.badlogic.nonogram.dialog.GameDialog;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 
@@ -50,8 +50,11 @@ public class GameScreen extends ScreenAdapter {
     private TextureAtlas atlas;
 
     private Label statusLabel;
+    Drawable whiteTileDrawable;
+    Drawable blackTileDrawable;
+    Drawable markedTileDrawable;
 
-    final ImageButton[][] tiles = new ImageButton[8][8];
+    final Image[][] tiles = new Image[8][8];
     Array<Array<Float>> tileValues;
 
     double timeRemaining;
@@ -75,6 +78,7 @@ public class GameScreen extends ScreenAdapter {
         else
             tileValues = generateNonogramTiles();
         timeRemaining = GameManager.INSTANCE.getTimeLimit();
+
         tileClickSound = assetManager.get(AssetDescriptors.TILE_CLICK_SOUND);
         buttonClickSound = assetManager.get(AssetDescriptors.BUTTON_CLICK_SOUND);
         solvedSound = assetManager.get(AssetDescriptors.SOLVED_SOUND);
@@ -88,6 +92,10 @@ public class GameScreen extends ScreenAdapter {
 
         skin = assetManager.get(AssetDescriptors.UI_SKIN);
         atlas = assetManager.get(AssetDescriptors.SCENE2D);
+
+        whiteTileDrawable = new TextureRegionDrawable(atlas.findRegion(RegionNames.WHITE_TILE));
+        blackTileDrawable = new TextureRegionDrawable(atlas.findRegion(RegionNames.BLACK_TILE));
+        markedTileDrawable = new TextureRegionDrawable(atlas.findRegion(RegionNames.MARKED_TILE));
 
         initGameOverDialog();
         initSolvedGameDialog();
@@ -147,8 +155,6 @@ public class GameScreen extends ScreenAdapter {
 
         Table tileTable = new Table();
         tileTable.defaults();
-        Drawable drawable = new TextureRegionDrawable(atlas.findRegion(RegionNames.WHITE_TILE));
-        Drawable drawable2 = new TextureRegionDrawable(atlas.findRegion(RegionNames.BLACK_TILE));
 
         for (int i = 0; i < 8; i++)
         {
@@ -157,16 +163,30 @@ public class GameScreen extends ScreenAdapter {
                 if(i < 3 && j < 3)
                     tiles[i][j] = null;
                 else if(j < 3 || i < 3)
-                    tiles[i][j] = new ImageButton(new TextureRegionDrawable(atlas.findRegion(String.valueOf(tileValues.get(i).get(j).intValue()))));
+                    tiles[i][j] = new Image(new TextureRegionDrawable(atlas.findRegion(String.valueOf(tileValues.get(i).get(j).intValue()))));
                 else
                 {
-                    tiles[i][j] = new ImageButton(drawable,drawable,drawable2);
-                    tiles[i][j].addListener(new ClickListener() {
+                    tiles[i][j] = new Image(whiteTileDrawable);
+                    tiles[i][j].setName("0.0");
+                    final int finalI = i;
+                    final int finalJ = j;
+                    tiles[i][j].addListener(new ActorGestureListener() {
                         @Override
-                        public void clicked(InputEvent event, float x, float y) {
+                        public void tap(InputEvent event, float x, float y, int count, int button) {
                             long id = tileClickSound.play();
                             tileClickSound.setVolume(id,0.2f);
+                            toogleTileState(finalI,finalJ);
                             checkIfSolved();
+                        }
+
+                        @Override
+                        public boolean longPress(Actor actor, float x, float y) {
+                            long id = tileClickSound.play();
+                            tileClickSound.setVolume(id,0.2f);
+                            tiles[finalI][finalJ].setName("0.0");
+                            tiles[finalI][finalJ].setDrawable(markedTileDrawable);
+                            checkIfSolved();
+                            return true;
                         }
                     });
                 }
@@ -202,7 +222,7 @@ public class GameScreen extends ScreenAdapter {
     {
         for (int i = 3; i < tileValues.size; i++)
             for (int j = 3; j < tileValues.get(0).size; j++)
-                    if (tiles[i][j].isChecked() != (tileValues.get(i).get(j) == 1))
+                    if (!tiles[i][j].getName().equals((tileValues.get(i).get(j)).toString()))
                         return;
         solvedSound.play();
         gameStatus = GameStatus.solved;
@@ -211,14 +231,7 @@ public class GameScreen extends ScreenAdapter {
         gameSolvedDialog.show(stage);
         for (int i = 3; i < tileValues.size; i++)
             for (int j = 3; j < tileValues.get(0).size; j++) {
-                final int finalI = i;
-                final int finalJ = j;
-                tiles[i][j].addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        tiles[finalI][finalJ].toggle();
-                    }
-                });
+                tiles[i][j].clearListeners();
             }
     }
 
@@ -324,4 +337,17 @@ public class GameScreen extends ScreenAdapter {
         return nonogram;
     }
 
+    void toogleTileState(int i, int j)
+    {
+        if (tiles[i][j].getName().equals("1.0"))
+        {
+            tiles[i][j].setName("0.0");
+            tiles[i][j].setDrawable(whiteTileDrawable);
+        }
+        else
+        {
+            tiles[i][j].setName("1.0");
+            tiles[i][j].setDrawable(blackTileDrawable);
+        }
+    }
 }

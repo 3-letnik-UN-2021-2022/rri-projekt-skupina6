@@ -43,6 +43,7 @@ public class MenuScreen extends ScreenAdapter {
         stage = new Stage(viewport, game.getBatch());
 
         //TODO: ZBRISI KO KONCAS Z DELOM
+        /*
         assetManager.load(AssetDescriptors.UI_FONT);
         assetManager.load(AssetDescriptors.UI_FONT_BIG);
         assetManager.load(AssetDescriptors.UI_SKIN);
@@ -52,6 +53,8 @@ public class MenuScreen extends ScreenAdapter {
         assetManager.load(AssetDescriptors.GAME_OVER_SOUND);
         assetManager.load(AssetDescriptors.SOLVED_SOUND);
         assetManager.finishLoading();
+
+         */
         buttonClickSound = assetManager.get(AssetDescriptors.BUTTON_CLICK_SOUND);
 
         skin = assetManager.get(AssetDescriptors.UI_SKIN);
