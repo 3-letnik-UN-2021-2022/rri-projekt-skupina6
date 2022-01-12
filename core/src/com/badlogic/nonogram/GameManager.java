@@ -1,14 +1,27 @@
 package com.badlogic.nonogram;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Random;
+import java.util.Vector;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 
 class NonogramTiles
 {
@@ -23,8 +36,12 @@ public class GameManager {
     private static final String NICKNAME = "nickname";
     private static final String LEADERBOARD = "data/leaderboard.json";
     private static final String TILES = "data/tiles.json";
+    private static final String URL_GET = "http://localhost:9000/getChain";
+    private static final String URL_POST = "http://localhost:9000/mineBlock";
+    private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final Preferences PREFS;
+    private final OkHttpClient httpClient;
     private int timeLimit;
     private String nickname;
     private LeaderBoard leaderBoard;
@@ -36,8 +53,9 @@ public class GameManager {
         PREFS = Gdx.app.getPreferences(Nonogram.class.getSimpleName());
         timeLimit = PREFS.getInteger(TIME_LIMIT,60);
         nickname = PREFS.getString(NICKNAME,"");
-        leaderBoard = json.fromJson(LeaderBoard.class, Gdx.files.internal(LEADERBOARD));
+        httpClient = new OkHttpClient();
         nonogramTiles = json.fromJson(NonogramTiles.class, Gdx.files.internal(TILES));
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
     }
 
     public int getTimeLimit() {
@@ -69,8 +87,10 @@ public class GameManager {
     }
 
     public LeaderBoard getLeaderBoard() {
-        return leaderBoard;
+        leaderBoard = getLeaderBoardFromBlockChain();
+        return this.leaderBoard;
     }
+
     public Array<Array<Float>> getTile()
     {
         int rand = random.nextInt(nonogramTiles.shapes.size);
@@ -120,33 +140,49 @@ public class GameManager {
     }
 
     public void setLeaderboard(String name, String time) {
+        try {
+            RequestBody body = RequestBody.create(JSON, "{\"nickname\":\"" + name + "\", \"time\":\"" + time + "\"}");
+            Request request = new Request.Builder()
+                    .url(URL_POST)
+                    .post(body)
+                    .build();
+            Response response = httpClient.newCall(request).execute();
+        } catch (Exception e) {
 
-        if(Integer.parseInt(leaderBoard.times.lastElement()) < Integer.parseInt(time))
-        {
-            leaderBoard.times.add(time);
-            leaderBoard.names.add(name);
         }
-        else
-        {
-            for (int i = 0; i < leaderBoard.names.size(); i++)
-            {
-                if(Integer.parseInt(leaderBoard.times.get(i)) > Integer.parseInt(time))
-                {
-                    leaderBoard.times.add(i,time);
-                    leaderBoard.names.add(i,name);
-                    break;
-                }
+    }
+
+    private Response makeHttpRequest(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        Response response = this.httpClient.newCall(request).execute();
+        return response;
+    }
+
+    private LeaderBoard getLeaderBoardFromBlockChain() {
+        LeaderBoard leaderBoard = new LeaderBoard();
+        try {
+            JSONObject jsObject = new JSONObject(makeHttpRequest(URL_GET).body().string());
+            JSONArray chain = jsObject.getJSONArray("chain");
+
+            Vector<String> names = new Vector<String>();
+            Vector<String> times = new Vector<String>();
+            Collections.sort(times);
+            for (int i = 1; i < chain.length(); i++) {
+                JSONObject block = chain.getJSONObject(i);
+                JSONObject data = block.getJSONObject("data");
+                String nickname = data.getString("nickname");
+                String time = data.getString("time");
+                names.add(nickname);
+                times.add(time);
             }
+            leaderBoard.names = names;
+            leaderBoard.times = times;
+        } catch (Exception e) {
+            return json.fromJson(LeaderBoard.class, Gdx.files.internal(LEADERBOARD));
         }
-
-        if(leaderBoard.names.size() > 10)
-        {
-            leaderBoard.names.removeElementAt(10);
-            leaderBoard.times.removeElementAt(10);
-        }
-
-        String stringLeaderBoard = json.toJson(leaderBoard);
-        FileHandle file = Gdx.files.local(LEADERBOARD);
-        file.writeString(stringLeaderBoard, false);
+        leaderBoard.sort();
+        return leaderBoard;
     }
 }
