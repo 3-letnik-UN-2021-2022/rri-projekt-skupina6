@@ -148,19 +148,13 @@ const validateCoinbaseTx = (transaction, blockIndex) => {
 };
 
 const validateTxIn = (txIn, transaction, aUnspentTxOuts) => {
-    console.log("SIMPAPA");
-    console.log(transaction);
-    console.log(aUnspentTxOuts);
-    console.log(txIn);
     const referencedUTxOut =
         aUnspentTxOuts.find((uTxO) => uTxO.txOutId === txIn.txOutId && uTxO.txOutIndex === txIn.txOutIndex);
     if (referencedUTxOut == null) {
         console.log('referenced txOut not found: ' + JSON.stringify(txIn));
         return false;
     }
-    console.log(referencedUTxOut);
     const address = referencedUTxOut.address;
-    console.log(address);
     console.log(transaction.id);
     const key = ec.keyFromPublic(address, 'hex');
     return key.verify(transaction.id, txIn.signature);

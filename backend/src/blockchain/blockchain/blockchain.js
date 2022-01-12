@@ -124,7 +124,6 @@ class Blockchain {
 
     generateWallet(public_key) {
         const tx = getCoinbaseTransaction(public_key, this.getLatestBlock().index);
-        console.log("to se dela");
         const retVal = processTransactions([tx], this.getUnspentTxOuts(), this.getLatestBlock().index);
         if (this.isChainValid()) {
             if (retVal === null) {
@@ -149,14 +148,8 @@ class Blockchain {
     };
 
     sendCoustomTransaction(address, amount, private_key) {
-        console.log("MIGEL");
-        console.log(this.getUnspentTxOuts());
-        console.log("ROBI");
-        console.log(getTransactionPool());
         const tx = createTransaction(address, amount, private_key, this.getUnspentTxOuts(), getTransactionPool());
         if (tx == false) return false;
-        console.log("MIGEL");
-        console.log(this.getUnspentTxOuts());
         addToTransactionPool(tx, this.getUnspentTxOuts());
         return tx;
     };

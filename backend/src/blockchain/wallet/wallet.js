@@ -32,7 +32,6 @@ const initWallet = () => {
         return;
     }
     const newPrivateKey = generatePrivateKey();
-    console.log(newPrivateKey);
     writeFileSync(privateKeyLocation, newPrivateKey);
     console.log('new wallet with private key created');
 };
