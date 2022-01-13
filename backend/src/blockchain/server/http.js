@@ -366,6 +366,6 @@ https.createServer(function (req, res) {
     }).on('error', (error) => {
         console.log(error);
     });
-}).listen(args[0]);
+}).listen(process.env.PORT || 5000);
 
 waitForUserInput();
