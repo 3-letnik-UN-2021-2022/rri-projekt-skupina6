@@ -36,8 +36,8 @@ public class GameManager {
     private static final String NICKNAME = "nickname";
     private static final String LEADERBOARD = "data/leaderboard.json";
     private static final String TILES = "data/tiles.json";
-    private static final String URL_GET = "http://localhost:9000/getChain";
-    private static final String URL_POST = "http://localhost:9000/mineBlock";
+    private static final String URL_GET = "https://blockchain-nonogram.herokuapp.com/getChain";
+    private static final String URL_POST = "https://blockchain-nonogram.herokuapp.com/mineBlock";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final Preferences PREFS;
@@ -55,7 +55,7 @@ public class GameManager {
         nickname = PREFS.getString(NICKNAME,"");
         httpClient = new OkHttpClient();
         nonogramTiles = json.fromJson(NonogramTiles.class, Gdx.files.internal(TILES));
-        Gdx.app.setLogLevel(Application.LOG_DEBUG);
+//        Gdx.app.setLogLevel(Application.LOG_DEBUG);
     }
 
     public int getTimeLimit() {
@@ -168,7 +168,6 @@ public class GameManager {
 
             Vector<String> names = new Vector<String>();
             Vector<String> times = new Vector<String>();
-            Collections.sort(times);
             for (int i = 1; i < chain.length(); i++) {
                 JSONObject block = chain.getJSONObject(i);
                 JSONObject data = block.getJSONObject("data");

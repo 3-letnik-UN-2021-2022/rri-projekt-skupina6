@@ -22,7 +22,7 @@
     "typescript": "^4.2.4"
   },
   "scripts": {
-    "start": "budo src/p2p/index.js:bundle.js"
+    "start": "node src/blockchain/server/http.js"
   },
   "repository": {
     "type": "git",
