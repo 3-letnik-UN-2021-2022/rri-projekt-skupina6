@@ -55,7 +55,6 @@ public class GameManager {
         nickname = PREFS.getString(NICKNAME,"");
         httpClient = new OkHttpClient();
         nonogramTiles = json.fromJson(NonogramTiles.class, Gdx.files.internal(TILES));
-//        Gdx.app.setLogLevel(Application.LOG_DEBUG);
     }
 
     public int getTimeLimit() {

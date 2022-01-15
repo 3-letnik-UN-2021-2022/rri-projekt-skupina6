@@ -123,7 +123,6 @@ public class IntroScreen extends ScreenAdapter {
         key.setScale(1.2f);
         key.addAction(
                 Actions.sequence(
-                        Actions.delay(1),
                         Actions.parallel(
                                 Actions.rotateBy(-720, 2f),
                                 Actions.moveTo(viewport.getWorldWidth() + 50, 290, 2f)
