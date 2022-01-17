@@ -21,7 +21,7 @@ import com.badlogic.nonogram.config.GameConfig;
 import com.rafaskoberg.gdx.typinglabel.TypingLabel;
 
 public class IntroScreen extends ScreenAdapter {
-    public static final float INTRO_DURATION_IN_SEC = 5f;
+    public static final float INTRO_DURATION_IN_SEC = 6f;
 
     private Viewport viewport;
 
@@ -103,8 +103,8 @@ public class IntroScreen extends ScreenAdapter {
         table.row().colspan(3);
         table.add(nonogramLabel);
         table.row().padTop(40).colspan(3);
-        TypingLabel madeByLabel = new TypingLabel(" {EASE}{SLOWER}{WAIT=2}Made By Nejc Podvratnik",skin.get("white", Label.LabelStyle.class));
-        madeByLabel.setFontScale(2);
+        TypingLabel madeByLabel = new TypingLabel(" {EASE}{SLOW}{WAIT=2}Made By Nejc Podvratnik, Jus Osojnik and Greba Rubin",skin.get("white", Label.LabelStyle.class));
+        madeByLabel.setFontScale(1.5f);
         table.add(madeByLabel);
         table.row().expand();
 
