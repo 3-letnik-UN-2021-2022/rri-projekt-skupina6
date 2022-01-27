@@ -18,6 +18,11 @@ import com.badlogic.nonogram.scene.MenuScreen;
 public class Nonogram extends Game {
 	private AssetManager assetManager;
 	private SpriteBatch batch;
+	private GalleryOpener galleryOpener;
+
+	public Nonogram(GalleryOpener opener) {
+		this.galleryOpener = opener;
+	}
 
 	@Override
 	public void create() {
@@ -40,6 +45,8 @@ public class Nonogram extends Game {
 	public AssetManager getAssetManager() {
 		return assetManager;
 	}
+
+	public GalleryOpener getGalleryOpener() { return galleryOpener; }
 
 	public SpriteBatch getBatch() {
 		return batch;

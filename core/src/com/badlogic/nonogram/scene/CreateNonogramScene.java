@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.nonogram.GalleryOpener;
 import com.badlogic.nonogram.GameManager;
 import com.badlogic.nonogram.Nonogram;
 import com.badlogic.nonogram.assets.AssetDescriptors;
@@ -33,6 +34,7 @@ import com.badlogic.nonogram.dialog.GameDialog;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class CreateNonogramScene extends ScreenAdapter {
     private final Nonogram game;
@@ -42,6 +44,7 @@ public class CreateNonogramScene extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private TextureAtlas atlas;
+    private GalleryOpener galleryOpener;
 
     Drawable whiteTileDrawable;
     Drawable blackTileDrawable;
@@ -59,6 +62,7 @@ public class CreateNonogramScene extends ScreenAdapter {
         assetManager = game.getAssetManager();
         buttonClickSound = assetManager.get(AssetDescriptors.BUTTON_CLICK_SOUND);
         tileClickSound = assetManager.get(AssetDescriptors.TILE_CLICK_SOUND);
+        galleryOpener = game.getGalleryOpener();
     }
 
     @Override
@@ -133,10 +137,14 @@ public class CreateNonogramScene extends ScreenAdapter {
         tileTable.center();
         table.add(tileTable).colspan(2).row();
 
+        final Label fileLabel = new Label("No image selected!",skin.get("white", Label.LabelStyle.class));
+        fileLabel.setFontScale(2);
+        table.add(fileLabel).colspan(2).row();
+
         TextButton saveButton = new TextButton("Save", skin);
         saveButton.setOrigin(Align.center);
         saveButton.setTransform(true);
-        saveButton.setScale(0.5f);
+        saveButton.setScale(0.6f);
         saveButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -152,10 +160,46 @@ public class CreateNonogramScene extends ScreenAdapter {
             }
         });
 
+        TextButton selectImageButton = new TextButton("Load Image", skin);
+        selectImageButton.setOrigin(Align.center);
+        selectImageButton.setTransform(true);
+        selectImageButton.setScale(0.6f);
+        selectImageButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
+                try {
+                    galleryOpener.getGalleryImagePath();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                fileLabel.setText("Image selected");
+            }
+        });
+
+        TextButton evaluateButton = new TextButton("Recognize", skin);
+        evaluateButton.setOrigin(Align.center);
+        evaluateButton.setTransform(true);
+        evaluateButton.setScale(0.6f);
+        evaluateButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                buttonClickSound.play();
+                if (galleryOpener.getSelectedFilePath() != null) {
+                    String selectedImagePath = galleryOpener.getSelectedFilePath();
+                    String result = GameManager.INSTANCE.evaluateImage(selectedImagePath);
+                    if (result != "0000000000000000000000000") {
+                        loadTilesFromImage(result);
+                    }
+                }
+            }
+        });
+
         TextButton backButton = new TextButton("Cancel", skin);
         backButton.setOrigin(Align.center);
         backButton.setTransform(true);
-        backButton.setScale(0.5f);
+        backButton.setScale(0.6f);
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -165,11 +209,14 @@ public class CreateNonogramScene extends ScreenAdapter {
         });
 
         table.add(backButton);
-        table.add(saveButton);
+        table.add(saveButton).row();
+        table.add(selectImageButton);
+        table.add(evaluateButton);
 
         table.center();
         table.setFillParent(true);
         table.pack();
+//        table.debug();
         return table;
     }
 
@@ -184,6 +231,24 @@ public class CreateNonogramScene extends ScreenAdapter {
         {
             tiles[i][j].setName("1.0");
             tiles[i][j].setDrawable(blackTileDrawable);
+        }
+    }
+
+    void loadTilesFromImage(String result) {
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                final char c = result.charAt(i * 5 + j);
+                if (c == '1' && tiles[i][j].getName().equals("0.0")) {
+                    switchTileState(i, j);
+                }
+                else {
+                    if (c == '0' && tiles[i][j].getName().equals("1.0")) {
+                        switchTileState(i, j);
+                    }
+                }
+            }
         }
     }
 }

@@ -10,6 +10,6 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.width = (int) GameConfig.WIDTH;
 		config.height = (int) GameConfig.HEIGHT;
-		new LwjglApplication(new Nonogram(), config);
+		new LwjglApplication(new Nonogram(new DesktopGalleryOpener()), config);
 	}
 }

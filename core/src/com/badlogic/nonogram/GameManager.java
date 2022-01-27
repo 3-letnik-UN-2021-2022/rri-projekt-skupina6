@@ -1,6 +1,5 @@
 package com.badlogic.nonogram;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.files.FileHandle;
@@ -10,13 +9,14 @@ import com.badlogic.gdx.utils.Json;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Vector;
 
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -38,6 +38,7 @@ public class GameManager {
     private static final String TILES = "data/tiles.json";
     private static final String URL_GET = "https://blockchain-nonogram.herokuapp.com/getChain";
     private static final String URL_POST = "https://blockchain-nonogram.herokuapp.com/mineBlock";
+    private static final String URL_POST_EVALUATE = "https://flask-monogram.herokuapp.com/solve";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final Preferences PREFS;
@@ -149,6 +150,32 @@ public class GameManager {
         } catch (Exception e) {
 
         }
+    }
+
+    public String evaluateImage(String path) {
+        File f = new File(path);
+        RequestBody body = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("image", f.getName(),
+                        RequestBody.create(MediaType.parse("image/jpg"), f))
+                .build();
+
+        Request request = new Request.Builder()
+                .url(URL_POST_EVALUATE)
+                .post(body)
+                .build();
+
+        String result = "0000000000000000000000000";
+
+        try {
+            result = httpClient.newCall(request).execute().body().string();
+            Gdx.app.log("Response", result);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Gdx.app.log("Response", String.valueOf(e));
+        }
+
+        return result;
     }
 
     private Response makeHttpRequest(String url) throws IOException {
